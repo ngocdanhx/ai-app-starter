@@ -12,4 +12,5 @@ TRẠNG THÁI: CHƯA ĐIỀN
 - Dữ liệu cần lưu (có file/ảnh không, lớn cỡ nào):
 - Dùng chủ yếu trên: điện thoại / máy tính / cả hai
 - Có thu tiền, quảng cáo hay dùng cho công việc không:
+- Cách làm: agent làm hết / bạn tự viết phần nào để học:
 - Ngoài phạm vi (chưa làm):

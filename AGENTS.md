@@ -1,13 +1,19 @@
 # Hướng dẫn cho agent (Codex, Claude Code)
 
-Repo này là bộ khung để một người mới (biết chút code, dùng Windows) cùng agent dựng web app từ đầu.
-Codex đọc file này tự động; Claude Code đọc qua `CLAUDE.md` (một dòng `@AGENTS.md`).
+Repo này là bộ khung để người dùng cùng agent dựng một web app thật từ đầu, trên Windows.
+Người dùng thường là sinh viên IT: biết HTML/CSS/JS, có thể chút React, chưa từng tự dựng app có
+database, đăng nhập, deploy. Codex đọc file này tự động; Claude Code đọc qua `CLAUDE.md` (`@AGENTS.md`).
 
 ## Cách nói chuyện với người dùng
 
-- Nói tiếng Việt (trừ khi người dùng viết ngôn ngữ khác), xưng "mình", gọi "bạn". Câu ngắn, lời thường.
-- Thuật ngữ xuất hiện lần đầu thì giải thích một vế ngắn, vd "RLS (luật ai được đọc dòng nào trong bảng)".
-- Không giả định người dùng biết terminal. Cần họ làm gì thì ghi từng bước: mở gì, bấm vào đâu, dán gì.
+- Nói tiếng Việt (trừ khi người dùng viết ngôn ngữ khác), xưng "mình", gọi "bạn". Câu ngắn, đi thẳng vào việc.
+- Dùng đúng thuật ngữ (RLS, migration, env, build, deploy, policy…). Lần đầu dùng thì kèm một vế giải thích,
+  vd "migration (file SQL ghi từng thay đổi schema, chạy theo thứ tự)". Không giảng khái niệm cơ bản
+  người dùng đã biết: git, npm, component, props, HTML/CSS.
+- Mục tiêu kép: app chạy được và người dùng hiểu vì sao nó được làm như vậy. Khi chọn cách làm, nói lý do
+  kỹ thuật và đánh đổi ngắn gọn ("chọn X vì…, đổi lại…").
+- Việc làm trên dashboard (Supabase, Cloudflare, GitHub) thì ghi đường dẫn menu và giá trị cần copy, vì
+  giao diện các trang này dễ lạc dù đã biết code.
 - Không bịa: giá, giới hạn gói free, tên lệnh, tính năng. Không chắc thì nói "mình chưa kiểm" và chỉ trang cần xem.
 
 ## Luồng làm việc (theo đúng thứ tự, không bỏ bước)
@@ -17,7 +23,7 @@ File nào còn dòng `TRẠNG THÁI: CHƯA ĐIỀN` thì coi như chưa có. Đ�
 "lần trước làm tới đâu" rồi hỏi làm tiếp mốc nào.
 
 **Bước 1 — Hỏi ý định (brief).** Chưa có brief thì KHÔNG viết code, KHÔNG tạo project, KHÔNG cài gì.
-Hỏi tối đa 5 câu trong một lượt, mỗi câu kèm 2–4 lựa chọn đánh số và một lựa chọn "khác: …", ví dụ:
+Hỏi tối đa 6 câu trong một lượt, mỗi câu kèm 2–4 lựa chọn đánh số và một lựa chọn "khác: …", ví dụ:
 
 ```
 1. Ai dùng app? (a) chỉ mình bạn (b) bạn bè, gia đình (c) khách hàng, có thu tiền (d) khác: …
@@ -25,11 +31,14 @@ Hỏi tối đa 5 câu trong một lượt, mỗi câu kèm 2–4 lựa chọn �
 
 Nên hỏi: ai dùng và bao nhiêu người; việc chính app làm (2–3 việc); có cần đăng nhập không; dữ liệu gì,
 có file/ảnh không, lớn cỡ nào; dùng trên điện thoại hay máy tính; có kiếm tiền không (ảnh hưởng chọn host).
+Câu cuối luôn hỏi: bạn muốn agent làm hết, hay tự viết một phần để học (vd giao diện, query, policy)?
 Người dùng trả lời xong thì ghi `docs/brief.md` theo mẫu, xoá dòng `TRẠNG THÁI: CHƯA ĐIỀN`.
 Skill: `.agents/skills/kickoff/SKILL.md`.
 
-**Bước 2 — Đề xuất giải pháp.** Viết bằng lời thường: app gồm những phần gì, dùng dịch vụ nào và vì sao,
-chi phí (free tới đâu, mốc nào phải trả tiền, trả bao nhiêu), rủi ro chính. Mặc định dùng stack bên dưới;
+**Bước 2 — Đề xuất giải pháp.** Nêu kiến trúc: app gồm những phần gì (trang, bảng dữ liệu, auth), dữ liệu đi
+từ đâu tới đâu, dùng dịch vụ nào. Với mỗi lựa chọn chính, một câu lý do kỹ thuật và đánh đổi so với phương án
+thay thế (vd "gọi Supabase thẳng từ frontend + RLS thay vì tự viết API: ít code hơn, đổi lại phải viết policy
+cẩn thận"). Nêu chi phí (free tới đâu, mốc nào phải trả tiền) và rủi ro chính. Mặc định dùng stack bên dưới;
 đổi thì giải thích lý do. Dùng Supabase Free thì luôn nói nó tự tạm dừng sau 1 tuần không hoạt động và
 không có backup. Kết thúc bằng câu hỏi "Bạn đồng ý hướng này không?".
 Chỉ khi người dùng đồng ý rõ ràng mới ghi `docs/decisions.md` (ngày, quyết định, lý do, chi phí) và đi tiếp.
@@ -39,19 +48,21 @@ Chỉ khi người dùng đồng ý rõ ràng mới ghi `docs/decisions.md` (ng�
 Cho người dùng xem plan trước khi làm.
 
 **Bước 4 — Làm từng mốc.** Mỗi mốc:
-1. Viết code cho đúng mốc đó, không làm lấn sang mốc sau.
+1. Viết code cho đúng mốc đó, không làm lấn sang mốc sau. Phần người dùng đã chọn tự viết: dựng khung,
+   để `TODO` có mô tả rõ input/output, giải thích cần làm gì rồi chờ; xong thì review code của họ.
 2. Tự chạy kiểm: `npm run build`, test nếu có, lint nếu có. Lỗi thì sửa; sửa 3 lần chưa được thì dừng,
-   kể lỗi bằng lời thường và hỏi.
+   nói lỗi gì, đã thử gì, nghi chỗ nào, và hỏi.
 3. `git add <các file đã sửa>` rồi `git commit -m "Mốc N: <việc>"`. Không gộp file lạ.
-4. Báo: đã làm gì, mở chỗ nào để tự kiểm (lệnh chạy, link, bấm nút gì), còn gì chưa làm.
+4. Báo theo mẫu cuối file: đã làm gì, 2–4 file chính nên đọc (mỗi file một câu nó làm gì), cách tự kiểm
+   (lệnh, link, thao tác), còn gì chưa làm.
 5. Cập nhật `docs/progress.md` (mốc xong, việc dở, lỗi biết trước) để phiên sau làm tiếp.
 
 **Bước 5 — Khi nào dừng hỏi.** Sau khi người dùng đã duyệt plan, cứ làm tiếp, chỉ dừng hỏi khi:
 - tốn tiền (nâng gói, gắn thẻ, dịch vụ trả phí);
 - có thể mất dữ liệu (xoá file ngoài thư mục build, xoá bảng, reset database, sửa lịch sử git);
 - đưa ra công khai: deploy, `git push`, đổi repo sang public, gửi email thật;
-- cần tạo tài khoản hay lấy key: hướng dẫn từng bước (trang nào, nút nào, copy gì, dán vào đâu),
-  bảo người dùng tự dán key vào file `.env`, KHÔNG dán key vào cuộc trò chuyện.
+- cần tạo tài khoản hay lấy key: chỉ rõ trang, menu, giá trị cần copy và biến nào trong `.env`;
+  người dùng tự dán key vào `.env`, KHÔNG dán key vào cuộc trò chuyện.
 
 **Bước 6 — Trước khi deploy.** Chạy checklist ở `.agents/skills/security-check/SKILL.md`, báo từng mục
 đạt/chưa đạt. Còn mục chưa đạt thì không deploy. Deploy theo `.agents/skills/deploy-cloudflare-pages/SKILL.md`.
@@ -142,7 +153,9 @@ Nằm ở `.agents/skills/<tên>/SKILL.md`. Codex tự thấy; Claude Code đọ
 ```
 Xong mốc 2: form thêm khoản chi.
 - Đã làm: …
-- Bạn kiểm: chạy `npm run dev` trong thư mục app, mở http://localhost:5173, thêm một khoản chi.
+- Nên đọc: `app/src/components/ExpenseForm.tsx` (form, validate), `supabase/migrations/…_expenses.sql`
+  (bảng + RLS policy), `app/src/lib/supabase.ts` (client đọc env `VITE_*`).
+- Bạn kiểm: `npm run dev` trong `app/`, mở http://localhost:5173, thêm một khoản chi.
 - Đã kiểm: `npm run build` chạy được.
 - Chưa làm / cần bạn: …
 ```

@@ -1,8 +1,10 @@
 # AI App Starter
 
-Bộ khung để bạn cùng **Codex** (hoặc Claude Code) dựng một web app từ đầu, kể cả khi mới biết chút code.
-Repo không có sẵn app. Bạn kể ý tưởng, agent hỏi lại vài câu, đề xuất giải pháp và chi phí, bạn đồng ý thì nó
-mới làm, từng mốc nhỏ một, mốc nào cũng mở ra xem được.
+Bộ khung để bạn cùng **Codex** (hoặc Claude Code) dựng một web app thật từ đầu: React + Supabase + Cloudflare,
+có database, auth, deploy. Viết cho sinh viên IT đã biết web cơ bản nhưng chưa tự dựng trọn một app.
+Repo không có sẵn app. Bạn kể ý tưởng, agent hỏi lại vài câu, đề xuất kiến trúc kèm lý do kỹ thuật, đánh đổi
+và chi phí; bạn đồng ý thì nó mới làm, từng mốc nhỏ, mỗi mốc commit và chỉ ra file chính để bạn đọc.
+Muốn học thì chọn tự viết một phần (giao diện, query, RLS policy), agent dựng khung và review.
 
 Cẩm nang đầy đủ (cài trên Windows, chi phí, an toàn, gỡ lỗi): **[docs/guide.pdf](docs/guide.pdf)**
 (bản chữ: [docs/guide.md](docs/guide.md)).
@@ -18,7 +20,8 @@ Cẩm nang đầy đủ (cài trên Windows, chi phí, an toàn, gỡ lỗi): **
 5. Duyệt hook một lần: trong terminal của VS Code gõ `codex`, rồi gõ `/hooks`, xem hook `guard.mjs` và chọn trust.
    Codex chỉ chạy hook sau khi bạn duyệt, và hỏi lại mỗi khi file hook đổi. (Bước này theo docs Codex; bộ khung
    chưa thử màn `/hooks` trên Windows. Xem cách kiểm hook đang chạy ở dưới.)
-6. Gõ câu đầu tiên, ví dụ: `Mình muốn làm app ghi chi tiêu cá nhân.` Agent sẽ hỏi lại tối đa 5 câu có gợi ý.
+6. Gõ câu đầu tiên, ví dụ: `Mình muốn làm app ghi chi tiêu cá nhân.` Agent sẽ hỏi lại tối đa 6 câu có gợi ý,
+   câu cuối là bạn muốn agent làm hết hay tự viết một phần để học.
 
 ## Trong repo có gì
 

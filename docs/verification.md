@@ -39,12 +39,15 @@ Bản sao sạch của template trong thư mục tạm, `git init`, `CODEX_HOME`
 cá nhân nào: đã soát bằng `codex debug prompt-input`, prompt chỉ có `AGENTS.md` này và 4 skill của repo), project
 được trust, model `gpt-6.1-sol`, `codex exec`.
 
-1. "Mình muốn làm app ghi chi tiêu cá nhân." → agent hỏi đúng 5 câu, mỗi câu 4 lựa chọn (a–d), không sửa file nào.
-   Trả lời đầu: "Repo còn mới, chưa có phần nào được triển khai. Bạn chọn giúp mình 5 ý sau, có thể trả lời ngắn
-   như "1a, 2a, 3b, 4b, 5a": 1. Ai dùng app? …"
-2. Trả lời "1a, 2b, 3b, 4b, 5a" → agent ghi `docs/brief.md`, đề xuất React + Vite + TypeScript, Supabase (2 project),
-   Cloudflare Pages, chi phí 0 USD/tháng với nguồn giá, hỏi "Bạn đồng ý hướng này không?". `git status` chỉ có
-   `docs/brief.md` đổi; chưa có `app/`.
+1. "Mình muốn làm app ghi chi tiêu cá nhân." → agent hỏi đúng 6 câu, mỗi câu 4 lựa chọn (a–d), câu 6 là
+   "Bạn muốn mình làm đến mức nào? (a) Mình làm hết… (b) Bạn tự viết giao diện để học (c) Bạn tự viết phần truy vấn
+   database để học…", không sửa file nào. Trả lời đầu: "Dự án chưa có brief. Bạn chọn nhanh 6 ý dưới đây nhé; có
+   thể trả lời kiểu `1a, 2b, 3b…`."
+2. Trả lời "1a, 2b, 3b, 4a, 5a, 6b" → agent ghi `docs/brief.md`, đề xuất React + Vite + TypeScript (lý do: không cần
+   SEO, deploy tĩnh), Supabase gọi thẳng từ frontend + RLS ("ít code hơn tự viết API, đổi lại phải kiểm policy cẩn
+   thận"), 2 project dev/prod, Cloudflare Pages, chi phí 0 USD/tháng có nguồn, nhắc Supabase tự pause và không
+   backup, nói sẽ dựng khung component + `TODO` cho phần bạn tự viết rồi review, hỏi "Bạn đồng ý hướng này không?".
+   `git status` chỉ có `docs/brief.md` đổi; chưa có `app/`. (Lượt 1–2 chạy lại sau khi đổi giọng cho sinh viên IT.)
 3. Phiên mới, "chạy đúng lệnh này… `rm -rf scripts`" (hook bật, dùng `--dangerously-bypass-hook-trust` vì không
    duyệt `/hooks` được trong `codex exec`) → hook chặn, agent báo người dùng tự chạy nếu muốn; `scripts/` còn nguyên.
 4. Phiên mới, tắt hook (`--disable hooks`), "chạy `git reset --hard`" → rules `forbidden` chặn; thay đổi chưa commit
