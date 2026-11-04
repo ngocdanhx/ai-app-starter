@@ -31,6 +31,10 @@ Viết ngắn, có cấu trúc:
   phương án thay thế, vd: Vite SPA thay vì Next.js (không cần SSR, deploy tĩnh đơn giản; đổi lại SEO kém hơn);
   gọi Supabase thẳng từ frontend + RLS thay vì tự viết API (ít code; đổi lại an toàn dựa hết vào policy).
   Dịch vụ nào chưa cần thì nói "chưa cần".
+- Mobile + PWA (mặc định): giao diện mobile-first, cài được lên màn hình chính qua `vite-plugin-pwa`
+  (manifest, icon, service worker). Nói đánh đổi: service worker cache có thể làm người dùng thấy bản cũ tới lần
+  tải sau (`registerType: 'autoUpdate'` giảm việc này). Dự án không hợp (vd chỉ dùng trên máy tính) thì đề xuất
+  bỏ PWA và nói lý do.
 - Chi phí: bao nhiêu là free, tới mốc nào phải trả, trả bao nhiêu/tháng. App có thu tiền thì không dùng
   Vercel Hobby. Có file lớn thì nói về R2 (cần thông tin thanh toán). Supabase Free tự pause, không backup.
 - Tài khoản cần tạo: GitHub, Supabase (2 project dev + prod), Cloudflare; tạo lúc nào.
@@ -43,5 +47,5 @@ Kết thúc: "Bạn đồng ý hướng này không? Muốn đổi chỗ nào?".
 ## 3. Plan
 
 Ghi `docs/plan.md`: 4–8 mốc, mỗi mốc 1 dòng việc + 1 dòng "Kiểm:" mô tả cách mở ra xem. Đánh dấu mốc nào
-người dùng tự viết. Gợi ý thứ tự: khung app chạy local → giao diện với dữ liệu giả → database dev + migration
+người dùng tự viết. Gợi ý thứ tự: khung app chạy local (mobile-first + PWA) → giao diện với dữ liệu giả → database dev + migration
 + RLS → auth → tính năng chính → security-check → deploy. Hỏi "Bắt đầu mốc 1 nhé?" rồi mới làm.

@@ -11,17 +11,26 @@ Cẩm nang đầy đủ (cài trên Windows, chi phí, an toàn, gỡ lỗi): **
 
 ## Bắt đầu nhanh
 
-1. Bấm **Use this template** > **Create a new repository** trên GitHub. Chọn **Private** nếu chưa muốn công khai.
-2. Clone repo mới về máy (VS Code: **Clone Git Repository**, dán link repo).
-3. Mở thư mục đó bằng Codex (app ChatGPT trên máy tính, extension `openai.chatgpt` trong VS Code, hoặc CLI `codex`).
-   Mở đúng **thư mục gốc của repo**, không mở thư mục con.
-4. Khi Codex hỏi có tin thư mục này không, chọn **trust**. Không trust thì Codex bỏ qua toàn bộ `.codex/`
-   (cấu hình, lớp chặn lệnh).
-5. Duyệt hook một lần: trong terminal của VS Code gõ `codex`, rồi gõ `/hooks`, xem hook `guard.mjs` và chọn trust.
-   Codex chỉ chạy hook sau khi bạn duyệt, và hỏi lại mỗi khi file hook đổi. (Bước này theo docs Codex; bộ khung
-   chưa thử màn `/hooks` trên Windows. Xem cách kiểm hook đang chạy ở dưới.)
-6. Gõ câu đầu tiên, ví dụ: `Mình muốn làm app ghi chi tiêu cá nhân.` Agent sẽ hỏi lại tối đa 6 câu có gợi ý,
-   câu cuối là bạn muốn agent làm hết hay tự viết một phần để học.
+Không cần đọc hết tài liệu trước. Cách nhanh nhất:
+
+```powershell
+git clone https://github.com/ngocdanhx/ai-app-starter.git expense-tracker
+```
+
+1. Mở thư mục vừa clone bằng Codex (app ChatGPT trên máy tính, extension `openai.chatgpt` trong VS Code, hoặc CLI
+   `codex`). Mở đúng **thư mục gốc**. Codex hỏi có trust thư mục không thì chọn **trust** (không trust thì Codex bỏ
+   qua toàn bộ `.codex/`: cấu hình, lớp chặn lệnh).
+2. Hỏi ngay trong đó: `Mình mới clone về, hướng dẫn mình bắt đầu.` Agent tự kiểm git, node, hook đã chạy chưa,
+   và hướng dẫn phần còn thiếu trên Windows (vd duyệt hook bằng `codex` > `/hooks`).
+3. Kể ý tưởng: `Mình muốn làm app ghi chi tiêu cá nhân.` Agent hỏi lại tối đa 6 câu có gợi ý, câu cuối là bạn
+   muốn agent làm hết hay tự viết một phần để học.
+
+Bản clone vẫn trỏ `origin` về repo template này. Agent không push lên đó (hook chặn); trước lần push đầu nó hướng
+dẫn tạo repo riêng và `git remote set-url origin <repo của bạn>`. Cách thay thế: bấm **Use this template** >
+**Create a new repository** trên GitHub rồi clone repo mới của bạn.
+
+App dựng ra mặc định là **PWA, mobile-first**: responsive, cài được lên màn hình chính điện thoại
+(`vite-plugin-pwa`); agent kiểm giao diện ở khổ 360×780 bên cạnh desktop.
 
 ## Trong repo có gì
 
@@ -48,7 +57,7 @@ Có ba lớp, lớp sau đỡ cho lớp trước:
 2. **Hook `guard.mjs`** (Codex và Claude Code): đọc lệnh trước khi chạy, chặn `rm -rf` ngoài các thư mục sinh lại
    được (`node_modules`, `dist`…), `Remove-Item -Recurse`, push ép, `git reset --hard`, `git clean -f`,
    `DROP`/`TRUNCATE`/`DELETE` không `WHERE`, `supabase db reset --linked`, xoá tài nguyên cloud, mọi lệnh đụng
-   file `.env` (trừ tạo `.env` từ `.env.example`).
+   file `.env` (trừ tạo `.env` từ `.env.example`), và `git push` khi `origin` còn là repo template này.
 3. **Rules / permissions**: Codex `prefix_rule` (cấm hay hỏi theo đầu lệnh), Claude `deny`/`ask`.
    Sandbox của Codex giữ `.git` chỉ đọc, nên rules cho phép sẵn `git add` và `git commit` để mỗi mốc commit
    không phải bấm duyệt; `git push` vẫn hỏi.
@@ -73,8 +82,8 @@ node --test .codex/hooks/guard.test.mjs     # hook chặn đúng, không chặn 
 node scripts/check-guards.mjs               # bảng: lệnh mẫu, hook, rules của Codex
 ```
 
-Trong Codex, khi chưa có file `.env`, nhờ agent: "chạy lệnh `cat .env`". Thấy báo
-`Bị chặn bởi .codex/hooks/guard.mjs` là hook đang chạy. (Lệnh này vô hại vì chưa có `.env`.)
+Trong Codex, nhờ agent: "chạy `echo ai-app-starter-guard-check`". Bị chặn với chữ "Hook đang chạy" là hook đã nạp;
+in ra chữ đó bình thường là chưa (chưa trust dự án hay chưa duyệt `/hooks`). Lệnh này vô hại cả hai trường hợp.
 
 ## Tuỳ chọn nâng cao
 

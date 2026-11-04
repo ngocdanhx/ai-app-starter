@@ -3,7 +3,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { check } from './guard.mjs'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { check, pushesToTemplate, PROBE } from './guard.mjs'
 
 const blocked = [
   'rm -rf /',
@@ -136,4 +139,31 @@ test('hook protocol: exit 0 for safe commands, other tools and bad input', () =>
   assert.equal(run({ tool_name: 'Bash', tool_input: { command: 'npm run build' } }).status, 0)
   assert.equal(run({ tool_name: 'apply_patch', tool_input: { command: 'rm -rf /' } }).status, 0)
   assert.equal(spawnSync(process.execPath, [guard], { input: 'not json', encoding: 'utf8' }).status, 0)
+})
+
+test('probe command is always blocked so agents can confirm the hook is loaded', () => {
+  assert.match(check(`echo ${PROBE}`), /Hook đang chạy/)
+})
+
+test('never push to the template repo', () => {
+  const tpl = 'https://github.com/ngocdanhx/ai-app-starter.git'
+  for (const c of ['git push', 'git push -u origin main', 'cd app && git push', 'git -C . push origin main'])
+    assert.ok(pushesToTemplate(c, tpl), c)
+  assert.ok(pushesToTemplate('git push https://github.com/ngocdanhx/ai-app-starter.git main', 'https://github.com/me/app.git'))
+  assert.ok(pushesToTemplate('git push', 'git@github.com:ngocdanhx/ai-app-starter.git'))
+  assert.equal(pushesToTemplate('git push -u origin main', 'https://github.com/me/expense-tracker.git'), false)
+  assert.equal(pushesToTemplate('git status', tpl), false)
+  assert.equal(pushesToTemplate('git commit -m "push later"', tpl), false)
+})
+
+test('hook protocol: push blocked when origin is the template', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'guard-'))
+  spawnSync('git', ['init', '-q'], { cwd: dir })
+  spawnSync('git', ['remote', 'add', 'origin', 'https://github.com/ngocdanhx/ai-app-starter.git'], { cwd: dir })
+  const r = spawnSync(process.execPath, [guard], { input: JSON.stringify({ tool_name: 'Bash', cwd: dir, tool_input: { command: 'git push -u origin main' } }), encoding: 'utf8', env: { ...process.env, AI_APP_STARTER_MAINTAINER: '' } })
+  assert.equal(r.status, 2)
+  assert.match(r.stderr, /repo template/)
+  spawnSync('git', ['remote', 'set-url', 'origin', 'https://github.com/me/app.git'], { cwd: dir })
+  const ok = spawnSync(process.execPath, [guard], { input: JSON.stringify({ tool_name: 'Bash', cwd: dir, tool_input: { command: 'git push -u origin main' } }), encoding: 'utf8', env: { ...process.env, AI_APP_STARTER_MAINTAINER: '' } })
+  assert.equal(ok.status, 0)
 })

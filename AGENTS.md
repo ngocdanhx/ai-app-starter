@@ -16,6 +16,19 @@ database, đăng nhập, deploy. Codex đọc file này tự động; Claude Cod
   giao diện các trang này dễ lạc dù đã biết code.
 - Không bịa: giá, giới hạn gói free, tên lệnh, tính năng. Không chắc thì nói "mình chưa kiểm" và chỉ trang cần xem.
 
+## Khi người dùng hỏi "bắt đầu thế nào / cài gì / dùng sao"
+
+Người dùng có thể vừa `git clone` và hỏi ngay, chưa đọc tài liệu. Không scaffold app, không cài gói. Tự kiểm rồi
+báo một bảng ngắn "có / thiếu / cách sửa", chỉ hướng dẫn phần còn thiếu (Windows, PowerShell):
+1. `git --version`, `node --version` (cần 20+), `gh --version` (tuỳ chọn). Thiếu thì đưa lệnh `winget install --id
+   Git.Git` / `OpenJS.NodeJS.LTS` / `GitHub.cli`, nhắc mở lại terminal.
+2. Hook: chạy `echo ai-app-starter-guard-check`. Bị chặn với chữ "Hook đang chạy" nghĩa là dự án đã trust và hook
+   đã duyệt. In ra chữ đó bình thường nghĩa là chưa: hướng dẫn trust thư mục khi Codex hỏi, rồi trong terminal chạy
+   `codex` (cần `npm install -g @openai/codex`), gõ `/hooks`, trust `guard.mjs`, mở lại phiên.
+3. `git remote get-url origin`: còn là `github.com/ngocdanhx/ai-app-starter` thì nói trước là sẽ cần repo riêng
+   khi push (mục Git), chưa phải làm ngay.
+4. Chỉ `docs/guide.md` cho phần đọc thêm (giới hạn free, sự cố, gỡ lỗi), rồi mời kể ý tưởng để vào Bước 1.
+
 ## Luồng làm việc (theo đúng thứ tự, không bỏ bước)
 
 **Bước 0 — Đầu mỗi phiên.** Đọc `docs/progress.md`, `docs/brief.md`, `docs/decisions.md`, `docs/plan.md`.
@@ -50,8 +63,10 @@ Cho người dùng xem plan trước khi làm.
 **Bước 4 — Làm từng mốc.** Mỗi mốc:
 1. Viết code cho đúng mốc đó, không làm lấn sang mốc sau. Phần người dùng đã chọn tự viết: dựng khung,
    để `TODO` có mô tả rõ input/output, giải thích cần làm gì rồi chờ; xong thì review code của họ.
-2. Tự chạy kiểm: `npm run build`, test nếu có, lint nếu có. Lỗi thì sửa; sửa 3 lần chưa được thì dừng,
-   nói lỗi gì, đã thử gì, nghi chỗ nào, và hỏi.
+2. Tự chạy kiểm: `npm run build`, test nếu có, lint nếu có. Mốc có giao diện thì xem cả khổ điện thoại 360×780
+   lẫn desktop (trình duyệt tích hợp của app nếu có, không thì `npx playwright screenshot --viewport-size=360,780
+   <url> mobile.png`; lần đầu cần `npx playwright install chromium`, tải khá nặng nên hỏi trước).
+   Lỗi thì sửa; sửa 3 lần chưa được thì dừng, nói lỗi gì, đã thử gì, nghi chỗ nào, và hỏi.
 3. `git add <các file đã sửa>` rồi `git commit -m "Mốc N: <việc>"`. Không gộp file lạ.
 4. Báo theo mẫu cuối file: đã làm gì, 2–4 file chính nên đọc (mỗi file một câu nó làm gì), cách tự kiểm
    (lệnh, link, thao tác), còn gì chưa làm.
@@ -74,6 +89,7 @@ Chọn cái đơn giản nhất đủ dùng. Chỉ thêm dịch vụ khi brief c
 | Phần | Mặc định | Ghi chú |
 |---|---|---|
 | Giao diện | React + Vite + TypeScript, trong thư mục `app/` | `npm create vite@latest app -- --template react-ts` |
+| Mobile + PWA | Responsive mobile-first; `vite-plugin-pwa` (manifest, icon, service worker) | Cài được lên màn hình chính; xem dưới |
 | Database, đăng nhập, file nhỏ | Supabase Free | 2 project riêng: dev và prod |
 | Host | Cloudflare Pages | Free cho cả dự án thương mại |
 | Host thay thế | Vercel Hobby | Chỉ khi dự án cá nhân, không thương mại |
@@ -81,6 +97,15 @@ Chọn cái đơn giản nhất đủ dùng. Chỉ thêm dịch vụ khi brief c
 | Lưu vào Google Drive | Chỉ scope `drive.file` | Lưu vào Drive của chính người dùng; không làm kho chính |
 | Gửi email | Resend | Chỉ khi app cần gửi email |
 | Code | Git + GitHub | Commit mỗi mốc |
+
+PWA mặc định (bỏ được nếu dự án không hợp, vd trang admin chỉ dùng máy tính; phải nói lý do ở Bước 2), làm ở
+mốc 1 hoặc 2 theo docs https://vite-pwa-org.netlify.app/guide/ : `npm install -D vite-plugin-pwa`, thêm
+`VitePWA({ registerType: 'autoUpdate', manifest: { name, short_name, description, theme_color, icons } })` vào
+`vite.config.ts`; icon 192×192 và 512×512 sinh từ một file SVG bằng `@vite-pwa/assets-generator`
+(`npx pwa-assets-generator --preset minimal-2023 public/logo.svg`); `index.html` có viewport, title, description,
+`apple-touch-icon`, `theme-color` khớp manifest. Kiểm bằng `npm run build && npm run preview`, DevTools >
+Application > Manifest / Service workers. CSS viết mobile-first (mặc định cho màn hẹp, `min-width` cho màn rộng),
+vùng bấm đủ lớn, không cuộn ngang ở 360 px.
 
 Dựng app trong thư mục con `app/`, không dựng thẳng vào gốc repo: trình tạo project có thể hỏi
 "xoá file có sẵn" và làm mất `AGENTS.md`, `docs/`. Lệnh phải chạy được trong PowerShell trên Windows;
@@ -136,6 +161,9 @@ Agent đi lạc, cần quay lại bản trước: dùng `git revert` hay tạo n
 - Commit nhỏ theo mốc, message tiếng Việt ngắn: `Mốc 2: form thêm khoản chi`.
 - Không commit `.env`, thư mục `backups/`, `node_modules/`, `dist/`.
 - `git push` là đưa code lên GitHub (và có thể kích hoạt deploy): hỏi trước.
+- `origin` còn trỏ `github.com/ngocdanhx/ai-app-starter` (clone thẳng template) thì **không bao giờ push lên đó**
+  (hook cũng chặn). Trước lần push đầu: hướng dẫn tạo repo riêng trên https://github.com/new (trống, không README,
+  nên để Private), rồi `git remote set-url origin <url repo mới>` và `git push -u origin main`. Cách thay thế: bấm **Use this template** trên GitHub rồi clone repo mới.
 
 ## Skills có sẵn
 

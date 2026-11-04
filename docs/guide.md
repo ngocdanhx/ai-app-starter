@@ -11,6 +11,20 @@ Bạn đã biết HTML, CSS, JavaScript, có thể đã làm chút React, nhưng
 
 `ai-app-starter` là một repo template trên GitHub, không có sẵn app. Repo gồm một bộ luật cho agent (`AGENTS.md`), mẫu tài liệu dự án, lớp chặn lệnh phá huỷ cho Codex và Claude Code, vài skill, và script sao lưu database. Khi bạn kể ý tưởng, agent đi theo một luồng cố định: hỏi lại vài câu có gợi ý, đề xuất kiến trúc kèm lý do kỹ thuật và chi phí, chờ bạn đồng ý, chia việc thành mốc nhỏ, rồi làm từng mốc. Xong mốc nào, app chạy được tới đó, agent commit và chỉ ra các file chính để bạn đọc. Bạn có thể giao hết cho agent, hoặc tự viết một phần (giao diện, query, RLS policy) để học, và để agent review.
 
+Bạn không phải đọc hết tài liệu này trước khi bắt đầu. Cách nhanh nhất là `git clone` repo, mở bằng Codex và hỏi ngay "mình mới clone về, hướng dẫn mình bắt đầu": agent tự kiểm máy và chỉ phần còn thiếu. Tài liệu này để tra khi cần.
+
+## Stack mặc định
+
+| Phần | Mặc định | Vì sao |
+|---|---|---|
+| Frontend | React + Vite + TypeScript trong `app/` | SPA build tĩnh, deploy đơn giản, không cần server riêng |
+| Mobile, PWA | Mobile-first, `vite-plugin-pwa` (manifest, icon, service worker) | Cài được lên màn hình chính điện thoại; agent kiểm ở khổ 360×780 lẫn desktop |
+| Database, auth, file nhỏ | Supabase (2 project dev và prod) | Postgres có sẵn auth và RLS; gọi thẳng từ frontend |
+| Host | Cloudflare Pages | Gói free cho cả dự án thương mại, build từ GitHub |
+| File lớn, email | R2, Resend | Chỉ thêm khi app cần |
+
+Agent được đổi stack nếu dự án cần, nhưng phải nói lý do; ví dụ bỏ PWA cho một trang quản trị chỉ dùng trên máy tính. PWA theo tài liệu `vite-plugin-pwa`: <https://vite-pwa-org.netlify.app/guide/>.
+
 Tài liệu đi theo thứ tự bạn sẽ làm: chuẩn bị tài khoản, cài công cụ trên Windows, tạo dự án, làm việc với agent, quyền của agent, giới hạn gói miễn phí, hai sự cố bảo mật có thật, và cách gỡ lỗi hay gặp. Số liệu giá kiểm ngày 04/11/2026, có link nguồn; giá đổi thường xuyên, xem lại trang nguồn trước khi trả tiền.
 
 # Chuẩn bị tài khoản
@@ -57,17 +71,23 @@ Nên dùng app hoặc extension hằng ngày, và cài thêm CLI vì bước duy
 
 # Tạo dự án và làm việc với agent
 
-## Tạo dự án từ template
+## Lấy bộ khung về máy
 
-Trên trang repo `ai-app-starter`, bấm **Use this template** > **Create a new repository**, đặt tên (vd `expense-tracker`), chọn Private nếu chưa muốn công khai. Clone về máy, đặt ngoài OneDrive (đồng bộ có thể khoá file khi agent đang ghi).
+Cách nhanh nhất là clone thẳng, đặt ngoài OneDrive (đồng bộ có thể khoá file khi agent đang ghi):
+
+```
+git clone https://github.com/ngocdanhx/ai-app-starter.git expense-tracker
+```
+
+Bản clone có `origin` trỏ về repo template. Agent không bao giờ push lên đó (luật trong `AGENTS.md`, và hook chặn `git push` khi `origin` còn là template). Trước lần push đầu, agent hướng dẫn tạo repo riêng ở <https://github.com/new> (để trống, không README, nên Private) rồi `git remote set-url origin <url repo mới>`. Cách thay thế: trên trang repo template bấm **Use this template** > **Create a new repository**, rồi clone repo mới của bạn; khi đó `origin` đã là repo của bạn từ đầu.
 
 Cấu trúc đáng biết: `AGENTS.md` là luật agent; `docs/brief.md`, `decisions.md`, `plan.md`, `progress.md` là bộ nhớ của dự án (agent điền dần, phiên sau đọc lại); `.codex/` và `.claude/` là cấu hình và lớp chặn; `.agents/skills/` là các quy trình con (kickoff, security-check, deploy, backup). App sẽ được scaffold vào `app/` ở mốc 1, không dựng thẳng vào gốc repo vì `npm create vite` trong thư mục không trống có thể đề nghị xoá file có sẵn.
 
 ## Trust dự án và duyệt hook
 
-Mở **thư mục gốc** của repo bằng Codex. Lần đầu Codex hỏi có trust thư mục không: chọn trust. Codex chỉ nạp layer `.codex/` của dự án (config, rules, hooks) khi dự án đã được trust. Nguồn: <https://learn.chatgpt.com/docs/config-file/config-basic>.
+Mở **thư mục gốc** của repo bằng Codex và hỏi "mình mới clone về, hướng dẫn mình bắt đầu". Agent chạy `git --version`, `node --version`, kiểm hook và `origin`, rồi chỉ phần còn thiếu. Phần dưới là chi tiết của các bước đó. Lần đầu Codex hỏi có trust thư mục không: chọn trust. Codex chỉ nạp layer `.codex/` của dự án (config, rules, hooks) khi dự án đã được trust. Nguồn: <https://learn.chatgpt.com/docs/config-file/config-basic>.
 
-Hook là script Codex chạy trước mỗi tool call; ở đây là `.codex/hooks/guard.mjs`, đọc lệnh shell và chặn nếu phá huỷ. Vì hook là code chạy trên máy bạn, Codex bắt duyệt nó một lần và duyệt lại khi file đổi (trust theo hash). Trong terminal của VS Code chạy `codex`, gõ `/hooks`, xem hook rồi trust. Nguồn: <https://learn.chatgpt.com/docs/hooks>. Bộ khung chưa thử màn này trên Windows, nên kiểm lại bằng cách sau: khi chưa có file `.env`, nhờ agent chạy `cat .env`. Agent báo bị chặn bởi `.codex/hooks/guard.mjs` là hook đang chạy (lệnh vô hại vì chưa có `.env`). Có thể tự kiểm thêm bằng `node --test .codex/hooks/guard.test.mjs` và `node scripts/check-guards.mjs`.
+Hook là script Codex chạy trước mỗi tool call; ở đây là `.codex/hooks/guard.mjs`, đọc lệnh shell và chặn nếu phá huỷ. Vì hook là code chạy trên máy bạn, Codex bắt duyệt nó một lần và duyệt lại khi file đổi (trust theo hash). Trong terminal của VS Code chạy `codex`, gõ `/hooks`, xem hook rồi trust. Nguồn: <https://learn.chatgpt.com/docs/hooks>. Bộ khung chưa thử màn này trên Windows, nên kiểm lại: nhờ agent chạy `echo ai-app-starter-guard-check`. Bị chặn với chữ "Hook đang chạy" là hook đã nạp; in ra chữ đó bình thường là chưa trust dự án hoặc chưa duyệt hook. Lệnh này vô hại trong cả hai trường hợp. Có thể tự kiểm thêm bằng `node --test .codex/hooks/guard.test.mjs` và `node scripts/check-guards.mjs`.
 
 ## Câu đầu tiên và cách trả lời
 
@@ -83,7 +103,7 @@ Trả lời ngắn kiểu "1a, 2b, 3b, 4a, 5a, 6b", thêm chi tiết nếu muố
 
 ## Mỗi mốc diễn ra thế nào
 
-Agent viết code cho đúng mốc, tự chạy `npm run build` (và test, lint nếu có), commit, rồi báo: đã làm gì, 2–4 file chính nên đọc kèm một câu mỗi file làm gì, cách tự kiểm, còn gì chưa làm. Phần bạn chọn tự viết, agent dựng khung, để `TODO` có mô tả input/output, giải thích việc cần làm và chờ bạn; xong thì nhờ agent review.
+Agent viết code cho đúng mốc, tự chạy `npm run build` (và test, lint nếu có), mốc có giao diện thì xem cả khổ điện thoại 360×780 lẫn desktop, commit, rồi báo: đã làm gì, 2–4 file chính nên đọc kèm một câu mỗi file làm gì, cách tự kiểm, còn gì chưa làm. Phần bạn chọn tự viết, agent dựng khung, để `TODO` có mô tả input/output, giải thích việc cần làm và chờ bạn; xong thì nhờ agent review.
 
 Đọc các file agent chỉ ra, đặc biệt migration SQL và RLS policy: đó là phần dễ sai nhất và đáng học nhất. Chạy thử thật sau mỗi mốc; agent có thể báo "xong" khi một nút chưa chạy. Phiên hôm sau, agent đọc `docs/progress.md` trước và tóm tắt lần trước làm tới đâu.
 
@@ -200,12 +220,14 @@ Lỡ dán key vào chat, commit `.env`, hay push secret: coi như key đã lộ.
 | Dev / prod | Project để làm và thử / project có người dùng thật |
 | Sandbox, approval | Ranh giới file/mạng của agent / khi nào agent phải hỏi |
 | Hook, rules | Script chạy trước mỗi lệnh của agent / luật cấm, hỏi theo đầu lệnh |
+| PWA, service worker | Web app cài được như app (manifest + icon) / script trình duyệt cache asset, chạy nền |
 | MCP | Giao thức nối agent với dịch vụ ngoài (database, Cloudflare…) |
 
 # Nguồn
 
 Kiểm ngày 04/11/2026.
 
+- Vite PWA: <https://vite-pwa-org.netlify.app/guide/>, <https://vite-pwa-org.netlify.app/guide/pwa-minimal-requirements.html>, <https://vite-pwa-org.netlify.app/assets-generator/cli.html>.
 - Codex: Windows <https://learn.chatgpt.com/docs/windows/windows-app>, <https://learn.chatgpt.com/docs/windows/windows-sandbox>; quyền <https://learn.chatgpt.com/docs/permission-modes>, <https://learn.chatgpt.com/docs/agent-approvals-security>; cấu hình <https://learn.chatgpt.com/docs/config-file/config-basic>; hooks <https://learn.chatgpt.com/docs/hooks>; rules <https://learn.chatgpt.com/docs/agent-configuration/rules>; AGENTS.md <https://learn.chatgpt.com/docs/agent-configuration/agents-md>; IDE <https://learn.chatgpt.com/docs/ide>; CLI <https://github.com/openai/codex>.
 - Claude Code: bộ nhớ và `AGENTS.md` <https://code.claude.com/docs/en/memory>; permissions <https://code.claude.com/docs/en/permissions>; hooks <https://code.claude.com/docs/en/hooks>.
 - Supabase: giá <https://supabase.com/pricing>; RLS <https://supabase.com/docs/guides/database/postgres/row-level-security>; MCP <https://supabase.com/docs/guides/getting-started/mcp>; sao lưu <https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore>.

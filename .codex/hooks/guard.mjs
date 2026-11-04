@@ -2,6 +2,7 @@
 // Guard for agent shell commands, shared by Codex (.codex/hooks.json) and Claude Code (.claude/settings.json).
 // Reads the PreToolUse JSON from stdin. Exit 2 + reason on stderr = block (both tools honor this).
 // This is a safety net for common mistakes, not a security boundary: it inspects the command text only.
+import { spawnSync } from 'node:child_process'
 
 // Regenerable build output and lockfiles: deleting them is a normal "clean reinstall".
 const SAFE_DIRS = new Set([
@@ -130,8 +131,27 @@ function checkText(cmd) {
   return null
 }
 
+// Harmless probe: an agent runs `echo ai-app-starter-guard-check`; being blocked proves the hook is loaded.
+export const PROBE = 'ai-app-starter-guard-check'
+const TEMPLATE_REMOTE = /github\.com[:/]ngocdanhx\/ai-app-starter(\.git)?\/?$/i
+
+// The template repo itself must never receive pushes from a clone. Maintainers set AI_APP_STARTER_MAINTAINER=1.
+export function pushesToTemplate(command, originUrl) {
+  if (process.env.AI_APP_STARTER_MAINTAINER === '1') return false
+  const isPush = segments(command).some(t => {
+    const g = t.findIndex(x => /(^|\/)git(\.exe)?$/i.test(x))
+    if (g < 0) return false
+    const rest = t.slice(g + 1)
+    let k = 0
+    while (k < rest.length && rest[k].startsWith('-')) k += ['-c', '-C'].includes(rest[k]) ? 2 : 1
+    return (rest[k] || '').toLowerCase() === 'push'
+  })
+  return isPush && (TEMPLATE_REMOTE.test(originUrl || '') || /github\.com[:/]ngocdanhx\/ai-app-starter/i.test(command))
+}
+
 export function check(command) {
   const cmd = Array.isArray(command) ? command.join(' ') : String(command || '')
+  if (cmd.includes(PROBE)) return 'Hook đang chạy (đây là lệnh kiểm, không phải lỗi).'
   for (const t of segments(cmd)) {
     const why = checkDelete(t) || checkGit(t)
     if (why) return why
@@ -147,8 +167,21 @@ async function main() {
   const tool = String(input.tool_name || '')
   if (!/^(Bash|PowerShell|shell|exec_command|local_shell)$/i.test(tool)) return
   const ti = input.tool_input || {}
-  const why = check(ti.command ?? ti.cmd ?? '')
+  const command = Array.isArray(ti.command) ? ti.command.join(' ') : String(ti.command ?? ti.cmd ?? '')
+  let why = check(command)
+  if (!why && /\bpush\b/.test(command)) {
+    const r = spawnSync('git', ['remote', 'get-url', 'origin'], { cwd: input.cwd || process.cwd(), encoding: 'utf8' })
+    if (pushesToTemplate(command, (r.stdout || '').trim())) {
+      process.stderr.write('Bị chặn bởi .codex/hooks/guard.mjs: origin vẫn là repo template ngocdanhx/ai-app-starter, không push lên đó. ' +
+        'Hướng dẫn người dùng tạo repo riêng trên GitHub (trống, không README) rồi `git remote set-url origin <url repo mới>`.\n')
+      process.exit(2)
+    }
+  }
   if (!why) return
+  if (why.startsWith('Hook đang chạy')) {
+    process.stderr.write(`.codex/hooks/guard.mjs: ${why}\n`)
+    process.exit(2)
+  }
   process.stderr.write(`Bị chặn bởi .codex/hooks/guard.mjs: ${why} ${ASK_USER}\n`)
   process.exit(2)
 }

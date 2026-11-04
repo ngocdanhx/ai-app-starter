@@ -24,7 +24,7 @@ p { margin: 0 0 0.6em; text-align: left; }
 h1 { font-size: 17pt; color: #0f4c5c; margin: 0 0 0.5em; padding-bottom: 4px; border-bottom: 2px solid #0f4c5c; margin-top: 1.2em; break-after: avoid; }
 h2 { font-size: 12.5pt; color: #0f4c5c; margin: 1.1em 0 0.4em; break-after: avoid; }
 h1 + p, h2 + p { break-before: avoid; }
-code { font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 8.6pt; background: #eef2f5; padding: 0 3px; border-radius: 3px; }
+code { font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-variant-ligatures: none; font-size: 8.6pt; background: #eef2f5; padding: 0 3px; border-radius: 3px; }
 pre { background: #eef2f5; padding: 8px 10px; border-radius: 6px; break-inside: avoid; white-space: pre-wrap; }
 pre code { background: none; padding: 0; }
 blockquote { margin: 0.6em 0; padding: 6px 12px; border-left: 3px solid #f2a541; background: #fdf6ec; break-inside: avoid; }
