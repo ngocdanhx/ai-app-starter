@@ -1,0 +1,16 @@
+# Codex project config. Codex loads it only after you mark this folder as trusted.
+# Docs: https://learn.chatgpt.com/docs/config-file/config-basic
+# Changing these lines changes what the agent may do on your computer. Read README.md first.
+
+# Ask before stepping outside the project folder or using the network.
+approval_policy = "on-request"
+# The agent can edit files only inside this project; .git and .codex stay read-only for it.
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+# Installing packages (npm install) needs the network: Codex asks first. Keep false.
+network_access = false
+
+[features]
+# Needed for .codex/hooks.json (guard against destructive commands).
+hooks = true

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.production)",
+      "Read(./**/.env)",
+      "Read(./**/.env.local)",
+      "Read(./**/.env.development)",
+      "Read(./**/.env.production)",
+      "Read(./**/.env.*.local)",
+      "Edit(./.codex/**)",
+      "Edit(./.claude/**)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(supabase db reset --linked *)",
+      "Bash(npx supabase db reset --linked *)"
+    ],
+    "ask": [
+      "Bash(rm -r *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(git push *)",
+      "Bash(supabase *)",
+      "Bash(npx supabase *)",
+      "Bash(wrangler *)",
+      "Bash(npx wrangler *)",
+      "Bash(vercel *)",
+      "Bash(psql *)",
+      "Bash(gh repo *)",
+      "Bash(gh secret *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.codex/hooks/guard.mjs"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "description": "Block destructive shell commands (rm -rf outside build folders, force push, reset --hard, DROP TABLE, printing .env). See .codex/hooks/guard.mjs.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/guard.mjs\"",
+            "commandWindows": "node .codex/hooks/guard.mjs",
+            "timeout": 10,
+            "statusMessage": "Kiểm lệnh an toàn"
+          }
+        ]
+      }
+    ]
+  }
+}

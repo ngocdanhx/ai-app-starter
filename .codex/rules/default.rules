@@ -1,0 +1,93 @@
+# Codex command rules for this project (Starlark). Loaded only when the project is trusted.
+# Docs: https://learn.chatgpt.com/docs/agent-configuration/rules
+# Test: codex execpolicy check --pretty --rules .codex/rules/default.rules -- git reset --hard
+# Rules match the start of a command exactly; .codex/hooks/guard.mjs catches the other spellings.
+
+# The sandbox keeps .git read-only, so committing needs to run outside it. Allow the two everyday
+# commands so each milestone can be committed without an approval prompt. The hook still runs first.
+prefix_rule(
+    pattern = ["git", ["add", "commit"]],
+    decision = "allow",
+    justification = "Lưu thay đổi vào lịch sử git của dự án (không xoá gì).",
+    match = ["git add src/App.tsx", "git commit -m 'Mốc 1'"],
+    not_match = ["git push"],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Xoá thay đổi chưa commit. Hãy giải thích cho người dùng và để họ tự quyết.",
+    match = ["git reset --hard HEAD~1"],
+    not_match = ["git reset HEAD src/App.tsx"],
+)
+
+prefix_rule(
+    pattern = ["git", "push", ["--force", "-f", "--force-with-lease"]],
+    decision = "forbidden",
+    justification = "Push ép ghi đè lịch sử trên GitHub. Không dùng.",
+    match = ["git push --force origin main", "git push -f"],
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "prompt",
+    justification = "Push lên GitHub có thể kích hoạt deploy (Cloudflare Pages) và đưa code ra ngoài.",
+    match = ["git push origin main"],
+    not_match = ["git status"],
+)
+
+prefix_rule(
+    pattern = ["git", "clean"],
+    decision = "prompt",
+    justification = "git clean xoá file chưa được git theo dõi.",
+)
+
+prefix_rule(
+    pattern = ["rm", ["-rf", "-fr", "-r", "-R", "-Rf", "-rF", "--recursive"]],
+    decision = "prompt",
+    justification = "Xoá cả thư mục. Kiểm đúng đường dẫn trước khi đồng ý.",
+    match = ["rm -rf node_modules"],
+    not_match = ["rm build.log"],
+)
+
+prefix_rule(
+    pattern = [["supabase"], ["db", "link", "projects", "secrets", "functions", "storage"]],
+    decision = "prompt",
+    justification = "Lệnh Supabase có thể chạm project trên mạng. Chỉ dùng project dev.",
+    match = ["supabase db push", "supabase link --project-ref abc"],
+    not_match = ["supabase --version"],
+)
+
+prefix_rule(
+    pattern = ["npx", "supabase", ["db", "link", "projects", "secrets", "functions", "storage"]],
+    decision = "prompt",
+    justification = "Lệnh Supabase có thể chạm project trên mạng. Chỉ dùng project dev.",
+    match = ["npx supabase db push"],
+)
+
+prefix_rule(
+    pattern = [["wrangler"], ["deploy", "pages", "r2", "d1", "kv", "secret", "delete"]],
+    decision = "prompt",
+    justification = "Lệnh Cloudflare deploy hay sửa tài nguyên thật.",
+    match = ["wrangler pages deploy dist"],
+)
+
+prefix_rule(
+    pattern = ["npx", "wrangler", ["deploy", "pages", "r2", "d1", "kv", "secret", "delete"]],
+    decision = "prompt",
+    justification = "Lệnh Cloudflare deploy hay sửa tài nguyên thật.",
+    match = ["npx wrangler pages deploy dist"],
+)
+
+prefix_rule(
+    pattern = [["vercel", "netlify", "firebase", "psql", "pg_dump", "pg_restore"]],
+    decision = "prompt",
+    justification = "Deploy hay kết nối thẳng vào database. Hỏi người dùng trước.",
+)
+
+prefix_rule(
+    pattern = ["gh", ["repo", "secret", "release"]],
+    decision = "prompt",
+    justification = "Sửa repo, secret hay release trên GitHub.",
+    match = ["gh repo create my-app --public"],
+)

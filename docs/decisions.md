@@ -1,0 +1,13 @@
+# Quyết định
+
+TRẠNG THÁI: CHƯA ĐIỀN
+
+> Mỗi quyết định một mục, ghi sau khi bạn đồng ý. Mới nhất ở dưới cùng.
+
+<!--
+## YYYY-MM-DD: <quyết định>
+- Chọn: …
+- Vì sao: …
+- Chi phí: free tới …; trả tiền khi …
+- Đã cân nhắc nhưng không chọn: …
+-->

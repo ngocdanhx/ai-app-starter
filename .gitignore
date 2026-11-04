@@ -1,0 +1,24 @@
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+
+# Database backups contain real data
+backups/
+
+# Build output and dependencies
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+.wrangler/
+.supabase/
+supabase/.temp/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
