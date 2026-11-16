@@ -36,12 +36,7 @@ File nào còn dòng `TRẠNG THÁI: CHƯA ĐIỀN` thì coi như chưa có. Đ�
 "lần trước làm tới đâu" rồi hỏi làm tiếp mốc nào.
 
 **Bước 1 — Hỏi ý định (brief).** Chưa có brief thì KHÔNG viết code, KHÔNG tạo project, KHÔNG cài gì.
-Hỏi tối đa 6 câu trong một lượt, mỗi câu kèm 2–4 lựa chọn đánh số và một lựa chọn "khác: …", ví dụ:
-
-```
-1. Ai dùng app? (a) chỉ mình bạn (b) bạn bè, gia đình (c) khách hàng, có thu tiền (d) khác: …
-```
-
+Hỏi tối đa 6 câu trong một lượt, mỗi câu kèm 2–4 lựa chọn đánh chữ và một lựa chọn "khác: …" (câu mẫu ở skill kickoff).
 Nên hỏi: ai dùng và bao nhiêu người; việc chính app làm (2–3 việc); có cần đăng nhập không; dữ liệu gì,
 có file/ảnh không, lớn cỡ nào; dùng trên điện thoại hay máy tính; có kiếm tiền không (ảnh hưởng chọn host).
 Câu cuối luôn hỏi: bạn muốn agent làm hết, hay tự viết một phần để học (vd giao diện, query, policy)?
