@@ -12,13 +12,12 @@ database, đăng nhập, deploy. Codex đọc file này tự động; Claude Cod
   người dùng đã biết: git, npm, component, props, HTML/CSS.
 - Mục tiêu kép: app chạy được và người dùng hiểu vì sao nó được làm như vậy. Khi chọn cách làm, nói lý do
   kỹ thuật và đánh đổi ngắn gọn ("chọn X vì…, đổi lại…").
-- Việc làm trên dashboard (Supabase, Cloudflare, GitHub) thì ghi đường dẫn menu và giá trị cần copy, vì
-  giao diện các trang này dễ lạc dù đã biết code.
+- Việc làm trên dashboard (Supabase, Cloudflare, GitHub) thì ghi đường dẫn menu và giá trị cần copy.
 - Không bịa: giá, giới hạn gói free, tên lệnh, tính năng. Không chắc thì nói "mình chưa kiểm" và chỉ trang cần xem.
 
 ## Khi người dùng hỏi "bắt đầu thế nào / cài gì / dùng sao"
 
-Người dùng có thể vừa `git clone` và hỏi ngay, chưa đọc tài liệu. Không scaffold app, không cài gói. Tự kiểm rồi
+Không scaffold app, không cài gói. Tự kiểm rồi
 báo một bảng ngắn "có / thiếu / cách sửa", chỉ hướng dẫn phần còn thiếu (Windows, PowerShell):
 1. `git --version`, `node --version` (cần 20+), `gh --version` (tuỳ chọn). Thiếu thì đưa lệnh `winget install --id
    Git.Git` / `OpenJS.NodeJS.LTS` / `GitHub.cli`, nhắc mở lại terminal.
@@ -60,7 +59,7 @@ Cho người dùng xem plan trước khi làm.
    để `TODO` có mô tả rõ input/output, giải thích cần làm gì rồi chờ; xong thì review code của họ.
 2. Tự chạy kiểm: `npm run build`, test nếu có, lint nếu có. Mốc có giao diện thì xem cả khổ điện thoại 360×780
    lẫn desktop (trình duyệt tích hợp của app nếu có, không thì `npx playwright screenshot --viewport-size=360,780
-   <url> mobile.png`; lần đầu cần `npx playwright install chromium`, tải khá nặng nên hỏi trước).
+   <url> mobile.png`; lần đầu cần `npx playwright install chromium`, hỏi trước).
    Lỗi thì sửa; sửa 3 lần chưa được thì dừng, nói lỗi gì, đã thử gì, nghi chỗ nào, và hỏi.
 3. `git add <các file đã sửa>` rồi `git commit -m "Mốc N: <việc>"`. Không gộp file lạ.
 4. Báo theo mẫu cuối file: đã làm gì, 2–4 file chính nên đọc (mỗi file một câu nó làm gì), cách tự kiểm
@@ -102,11 +101,10 @@ mốc 1 hoặc 2 theo docs https://vite-pwa-org.netlify.app/guide/ : `npm instal
 Application > Manifest / Service workers. CSS viết mobile-first (mặc định cho màn hẹp, `min-width` cho màn rộng),
 vùng bấm đủ lớn, không cuộn ngang ở 360 px.
 
-Dựng app trong thư mục con `app/`, không dựng thẳng vào gốc repo: trình tạo project có thể hỏi
-"xoá file có sẵn" và làm mất `AGENTS.md`, `docs/`. Lệnh phải chạy được trong PowerShell trên Windows;
+Dựng app trong thư mục con `app/`, không dựng thẳng vào gốc repo. Lệnh phải chạy được trong PowerShell trên Windows;
 ưu tiên `npm run …` và script Node (`.mjs`) thay cho script bash.
 
-Số liệu gói free (kiểm 04/11/2026; giá đổi thường xuyên, khi báo chi phí nhắc người dùng xem lại trang giá):
+Số liệu gói free (kiểm 04/11/2026; khi báo chi phí nhắc người dùng xem lại trang giá):
 - Supabase Free: DB 500 MB, storage 1 GB, file tối đa 50 MB, 50.000 người dùng hoạt động/tháng,
   egress 5 GB, 2 project; **tự tạm dừng sau 1 tuần không hoạt động, không có backup**. Pro từ $25/tháng.
 - Cloudflare Pages: 500 lần build/tháng; Workers Free 100.000 request/ngày. Workers Paid từ $5/tháng.
