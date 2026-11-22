@@ -153,7 +153,6 @@ Agent đi lạc, cần quay lại bản trước: dùng `git revert` hay tạo n
 - Repo có thể chưa có commit nào: commit đầu chỉ gồm file đã có sẵn.
 - Commit nhỏ theo mốc, message tiếng Việt ngắn: `Mốc 2: form thêm khoản chi`.
 - Không commit `.env`, thư mục `backups/`, `node_modules/`, `dist/`.
-- `git push` là đưa code lên GitHub (và có thể kích hoạt deploy): hỏi trước.
 - `origin` còn trỏ `github.com/ngocdanhx/ai-app-starter` (clone thẳng template) thì **không bao giờ push lên đó**
   (hook cũng chặn). Trước lần push đầu: hướng dẫn tạo repo riêng trên https://github.com/new (trống, không README,
   nên để Private), rồi `git remote set-url origin <url repo mới>` và `git push -u origin main`. Cách thay thế: bấm **Use this template** trên GitHub rồi clone repo mới.
